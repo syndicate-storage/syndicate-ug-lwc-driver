@@ -1,0 +1,132 @@
+#!/usr/bin/env python
+
+"""
+   Copyright 2016 The Trustees of University of Arizona
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+"""
+
+"""
+Locally Configurable UG web-cache driver.
+"""
+
+import traceback
+import json
+import os
+import syndicate.util.gateway as gateway
+import sgwcdriver.lib.abstractwc as abstractwc
+
+from sgwcdriver.lib.pluginloader import pluginloader
+
+LOCAL_CONFIG_PATH = "/etc/sgwcdriver.conf"
+wc = None
+
+
+def _readConfigFromLocal():
+    # return local driver_config
+    try:
+        with open(LOCAL_CONFIG_PATH, 'r') as f:
+            conf = json.load(f)
+            return conf
+    except IOError:
+        return {}
+
+
+def _initWC(driver_config):
+    global wc
+
+    gateway.log_debug("_initWC")
+
+    if wc:
+        return True
+
+    plugin = None
+    if "DRIVER_WC_PLUGIN" in driver_config:
+        plugin = driver_config["DRIVER_WC_PLUGIN"]
+
+    plugin_config = None
+    if "DRIVER_WC_PLUGIN_CONFIG" in driver_config:
+        plugin_config_raw = driver_config["DRIVER_WC_PLUGIN_CONFIG"]
+
+    # try local_driver_config
+    local_driver_config = _readConfigFromLocal()
+    if "DRIVER_WC_PLUGIN" in local_driver_config:
+        plugin = local_driver_config["DRIVER_WC_PLUGIN"]
+
+    if "DRIVER_WC_PLUGIN_CONFIG" in local_driver_config:
+        plugin_config_raw = local_driver_config["DRIVER_WC_PLUGIN_CONFIG"]
+
+    if not plugin:
+        gateway.log_error("No DRIVER_WC_PLUGIN defined")
+        return False
+
+    if not plugin_config_raw:
+        gateway.log_error("No DRIVER_WC_PLUGIN_CONFIG defined")
+        return False
+
+    if isinstance(plugin_config_raw, dict):
+        plugin_config = plugin_config_raw
+    elif isinstance(plugin_config_raw, basestring):
+        plugin_config = json.loads(plugin_config_raw)
+
+    try:
+        loader = pluginloader()
+        wc = loader.load(plugin, plugin_config)
+        if not wc:
+            gateway.log_error("No such driver plugin found: %s" % plugin)
+            return False
+    except Exception as e:
+        gateway.log_error("Unable to initialize a driver")
+        gateway.log_error(str(e))
+        traceback.print_exc()
+        return False
+
+    gateway.log_debug("Driver initialized")
+    return True
+
+
+def _shutdownWC():
+    global wc
+
+    gateway.log_debug("_shutdownWC")
+    wc = None
+
+
+def driver_init(driver_config, driver_secrets):
+    """
+    Do the one-time driver setup.
+    """
+    gateway.log_debug("driver_init")
+
+    if not _initWC(driver_config):
+        gateway.log_error("Unable to init driver")
+        return False
+
+    return True
+
+
+def driver_shutdown():
+    """
+    Do the one-time driver shutdown
+    """
+    gateway.log_debug("driver_shutdown")
+
+    _shutdownWC()
+
+
+def cdn_url(url, driver_config, driver_secrets):
+    """
+    make the URL accessible
+    """
+    gateway.log_debug("cdn_url : %s" % url)
+    return wc.translate(url)
