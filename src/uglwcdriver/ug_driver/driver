@@ -56,7 +56,7 @@ def _initWebCache(driver_config):
         # use null plugin by-default
         plugin = "null"
 
-    plugin_config = None
+    plugin_config_raw = None
     if "DRIVER_WC_PLUGIN_CONFIG" in driver_config:
         plugin_config_raw = driver_config["DRIVER_WC_PLUGIN_CONFIG"]
 
@@ -76,6 +76,7 @@ def _initWebCache(driver_config):
         gateway.log_error("No DRIVER_WC_PLUGIN_CONFIG defined")
         plugin_config_raw = {}
 
+    plugin_config = None
     if isinstance(plugin_config_raw, dict):
         plugin_config = plugin_config_raw
     elif isinstance(plugin_config_raw, basestring):
