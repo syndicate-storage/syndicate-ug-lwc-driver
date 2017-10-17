@@ -21,7 +21,7 @@ Akamai Plugin
 """
 import logging
 import urlparse
-import sgwcdriver.lib.abstractwc as abstractwc
+import uglwcdriver.lib.abstractlwc as abstractlwc
 
 logger = logging.getLogger('syndicate_akamai_cdn')
 logger.setLevel(logging.DEBUG)
@@ -36,7 +36,7 @@ fh.setFormatter(formatter)
 logger.addHandler(fh)
 
 
-class plugin_impl(abstractwc.awcbase):
+class plugin_impl(abstractlwc.awcbase):
     def __init__(self, config):
         logger.info("__init__")
 

@@ -1,7 +1,7 @@
 Format: http://dep.debian.net/deps/dep5
-Upstream-Name: syndicate-webcache-driver
+Upstream-Name: syndicate-ug-lwc-driver
 Upstream-Contact: Illyoung Choi <iychoi@email.arizona.edu>
-Source: https://github.com/syndicate-storage/syndicate-webcache-driver
+Source: https://github.com/syndicate-storage/syndicate-ug-lwc-driver
 
 Files:*
 License: Apache-2.0

@@ -17,19 +17,19 @@
 """
 
 """
-Locally Configurable UG web-cache driver.
+Locally-configurable Web-cache driver.
 """
 
 import traceback
 import json
 import os
 import syndicate.util.gateway as gateway
-import sgwcdriver.lib.abstractwc as abstractwc
+import uglwcdriver.lib.abstractlwc as abstractlwc
 
-from sgwcdriver.lib.pluginloader import pluginloader
+from uglwcdriver.lib.pluginloader import pluginloader
 
-LOCAL_CONFIG_PATH = "/etc/sgwcdriver.conf"
-wc = None
+LOCAL_CONFIG_PATH = "/etc/uglwcdriver.conf"
+webcache = None
 
 
 def _readConfigFromLocal():
@@ -42,12 +42,12 @@ def _readConfigFromLocal():
         return {}
 
 
-def _initWC(driver_config):
-    global wc
+def _initWebCache(driver_config):
+    global webcache
 
-    gateway.log_debug("_initWC")
+    gateway.log_debug("_initWebCache")
 
-    if wc:
+    if webcache:
         return True
 
     plugin = None
@@ -81,8 +81,8 @@ def _initWC(driver_config):
 
     try:
         loader = pluginloader()
-        wc = loader.load(plugin, plugin_config)
-        if not wc:
+        webcache = loader.load(plugin, plugin_config)
+        if not webcache:
             gateway.log_error("No such driver plugin found: %s" % plugin)
             return False
     except Exception as e:
@@ -95,11 +95,11 @@ def _initWC(driver_config):
     return True
 
 
-def _shutdownWC():
-    global wc
+def _shutdownWebCache():
+    global webcache
 
-    gateway.log_debug("_shutdownWC")
-    wc = None
+    gateway.log_debug("_shutdownWebCache")
+    webcache = None
 
 
 def driver_init(driver_config, driver_secrets):
@@ -108,7 +108,7 @@ def driver_init(driver_config, driver_secrets):
     """
     gateway.log_debug("driver_init")
 
-    if not _initWC(driver_config):
+    if not _initWebCache(driver_config):
         gateway.log_error("Unable to init driver")
         return False
 
@@ -121,7 +121,7 @@ def driver_shutdown():
     """
     gateway.log_debug("driver_shutdown")
 
-    _shutdownWC()
+    _shutdownWebCache()
 
 
 def cdn_url(url, driver_config, driver_secrets):
@@ -129,4 +129,4 @@ def cdn_url(url, driver_config, driver_secrets):
     make the URL accessible
     """
     gateway.log_debug("cdn_url : %s" % url)
-    return wc.translate(url)
+    return webcache.translate(url)

@@ -1,2 +1,2 @@
-# syndicate-webcache-driver
-Locally configurable web-cache driver for UG
+# syndicate-ug-lwc-driver
+Locally-configurable web-cache driver for Syndicate UG

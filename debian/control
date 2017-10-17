@@ -1,12 +1,12 @@
-Source: syndicate-webcache-driver
+Source: syndicate-ug-lwc-driver
 Section: python
 Priority: optional
 Maintainer: Illyoung Choi, University of Arizona <iychoi@email.arizona.edu>
 Standards-Version: 3.9.5
 Build-Depends: debhelper (>= 9), python-setuptools, python-all-dev
 
-Package: syndicate-webcache-driver
+Package: syndicate-ug-lwc-driver
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}
 Description: Syndicate web-cache driver
- Locally configurable web-cache driver for UG
+ Locally-configurable web-cache driver for Syndicate UG

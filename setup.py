@@ -21,32 +21,32 @@ from setuptools import setup
 import os
 
 packages = [
-    'sgwcdriver',
-    'sgwcdriver.lib',
-    'sgwcdriver.plugins'
+    'uglwcdriver',
+    'uglwcdriver.lib',
+    'uglwcdriver.plugins'
 ]
 
 # detect plugins
-plugins = os.listdir('src/sgwcdriver/plugins')
+plugins = os.listdir('src/uglwcdriver/plugins')
 for plugin in plugins:
-    if os.path.isdir(os.path.join('src/sgwcdriver/plugins', plugin)):
-        packages.append('sgwcdriver.plugins.' + plugin)
+    if os.path.isdir(os.path.join('src/uglwcdriver/plugins', plugin)):
+        packages.append('uglwcdriver.plugins.' + plugin)
 
 # dependencies
 dependencies = [
 ]
 
 setup(
-    name='sgwcdriver',
+    name='uglwcdriver',
     version='0.1',
-    description='Syndicate User Gateway Web-Cache Driver',
-    url='https://github.com/syndicate-storage/syndicate-webcache-driver',
+    description='Locally-configurable web-cache driver for Syndicate UG ',
+    url='https://github.com/syndicate-storage/syndicate-ug-lwc-driver',
     author='Illyoung Choi',
     author_email='syndicate@lists.cs.princeton.edu',
     license='Apache 2.0',
     packages=packages,
     package_dir={
-        'sgwcdriver': 'src/sgwcdriver'
+        'uglwcdriver': 'src/uglwcdriver'
     },
     install_requires=dependencies,
     zip_safe=False

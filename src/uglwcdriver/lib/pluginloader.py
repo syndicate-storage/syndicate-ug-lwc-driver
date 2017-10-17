@@ -19,7 +19,7 @@
 import os
 import imp
 
-import sgwcdriver.lib.abstractwc as abstractwc
+import uglwcdriver.lib.abstractlwc as abstractlwc
 
 """
 Exceptions

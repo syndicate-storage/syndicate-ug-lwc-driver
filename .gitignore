@@ -1,5 +1,5 @@
 build/
 dist/
-sgwcdriver.egg-info/
+uglwcdriver.egg-info/
 *.pyc
 *.log
