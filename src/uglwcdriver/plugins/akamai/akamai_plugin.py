@@ -56,7 +56,7 @@ class plugin_impl(abstractlwc.awcbase):
         if not self.cdn_prefix:
             raise ValueError("akamai CDN PREFIX is not given correctly")
 
-        prefix_parts = urlparse.urlparse(prefix)
+        prefix_parts = urlparse.urlparse(cdn_prefix)
         self.prefix_scheme = None
         self.prefix_host = None
         if len(prefix_parts.scheme) > 0:
