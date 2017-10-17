@@ -24,7 +24,6 @@ import traceback
 import json
 import os
 import syndicate.util.gateway as gateway
-import uglwcdriver.lib.abstractlwc as abstractlwc
 
 from uglwcdriver.lib.pluginloader import pluginloader
 
