@@ -49,26 +49,74 @@ class plugin_impl(abstractlwc.awcbase):
 
         self.akamai_config = akamai_config
 
-        # we convert unicode (maybe) strings to ascii
-        # since python-irodsclient cannot accept unicode strings
-        cdn_prefix = self.akamai_config["cdn_prefix"]
-        self.cdn_prefix = cdn_prefix.encode('ascii', 'ignore')
-        if not self.cdn_prefix:
-            raise ValueError("akamai CDN PREFIX is not given correctly")
+        # parse map
+        url_mappings = self.akamai_config.get("map")
+        if not url_mappings:
+            raise ValueError("akamai url mapping configuration is not given correctly")
 
-        prefix_parts = urlparse.urlparse(cdn_prefix)
-        self.prefix_scheme = None
-        self.prefix_host = None
-        if len(prefix_parts.scheme) > 0:
-            self.prefix_scheme = prefix_parts.scheme
-            self.prefix_host = prefix_parts.netloc
-        else:
-            self.prefix_scheme = "http"
-            self.prefix_host = prefix_parts.path
+        if not isinstance(url_mappings, list):
+            raise ValueError("akamai url mapping configuration is not an array")
+
+        self.url_mappings = url_mappings
+        self.mappings = {}
+
+        for url_mapping in self.url_mappings:
+            host = url_mapping.get("host")
+            host = host.encode('ascii', 'ignore')
+            if not host:
+                raise ValueError("akamai host is not given correctly")
+
+            cdn_prefix = url_mapping.get("cdn_prefix")
+            cdn_prefix = cdn_prefix.encode('ascii', 'ignore')
+            if not cdn_prefix:
+                raise ValueError("akamai cdn prefix is not given correctly")
+
+            key = None
+            if host in ["*"]:
+                key = "*"
+            else:
+                host_parts = urlparse.urlparse(host)
+                host_scheme = None
+                host_host = None
+                if len(host_parts.scheme) > 0:
+                    host_scheme = host_parts.scheme
+                    host_host = host_parts.netloc
+                else:
+                    host_scheme = "http"
+                    host_host = host_parts.path
+                key = "%s://%s" % (host_scheme, host_host)
+
+            prefix_parts = urlparse.urlparse(cdn_prefix)
+            prefix_scheme = None
+            prefix_host = None
+            if len(prefix_parts.scheme) > 0:
+                prefix_scheme = prefix_parts.scheme
+                prefix_host = prefix_parts.netloc
+            else:
+                prefix_scheme = "http"
+                prefix_host = prefix_parts.path
+
+            self.mappings[key] = (cdn_prefix, prefix_scheme, prefix_host)
 
     def translate(self, url):
         """
         make the URL accessible via the Akamai CDN prefix
         """
         url_parts = urlparse.urlparse(url)
-        return '{}://{}/{}{}'.format(self.prefix_scheme, self.prefix_host, url_parts.netloc, url_parts.path)
+
+        url_scheme = None
+        url_host = None
+        url_scheme = url_parts.scheme
+        url_host = url_parts.netloc
+
+        key = "%s://%s" % (url_scheme, url_host)
+        if key in self.mappings:
+            _, prefix_scheme, prefix_host = self.mappings.get(key)
+            return '{}://{}/{}{}'.format(prefix_scheme, prefix_host, url_parts.netloc, url_parts.path)
+        else:
+            # wildcard
+            if "*" in self.mappings:
+                _, prefix_scheme, prefix_host = self.mappings.get("*")
+                return '{}://{}/{}{}'.format(prefix_scheme, prefix_host, url_parts.netloc, url_parts.path)
+            else:
+                return url
