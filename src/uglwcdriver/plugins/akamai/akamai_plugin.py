@@ -68,8 +68,6 @@ class plugin_impl(abstractlwc.awcbase):
 
             cdn_prefix = url_mapping.get("cdn_prefix")
             cdn_prefix = cdn_prefix.encode('ascii', 'ignore')
-            if not cdn_prefix:
-                raise ValueError("akamai cdn prefix is not given correctly")
 
             key = None
             if host in ["*"]:
@@ -86,17 +84,20 @@ class plugin_impl(abstractlwc.awcbase):
                     host_host = host_parts.path
                 key = "%s://%s" % (host_scheme, host_host)
 
-            prefix_parts = urlparse.urlparse(cdn_prefix)
-            prefix_scheme = None
-            prefix_host = None
-            if len(prefix_parts.scheme) > 0:
-                prefix_scheme = prefix_parts.scheme
-                prefix_host = prefix_parts.netloc
-            else:
-                prefix_scheme = "http"
-                prefix_host = prefix_parts.path
+            if cdn_prefix:
+                prefix_parts = urlparse.urlparse(cdn_prefix)
+                prefix_scheme = None
+                prefix_host = None
+                if len(prefix_parts.scheme) > 0:
+                    prefix_scheme = prefix_parts.scheme
+                    prefix_host = prefix_parts.netloc
+                else:
+                    prefix_scheme = "http"
+                    prefix_host = prefix_parts.path
 
-            self.mappings[key] = (cdn_prefix, prefix_scheme, prefix_host)
+                self.mappings[key] = (cdn_prefix, prefix_scheme, prefix_host)
+            else:
+                self.mappings[key] = (None, None, None)
 
     def translate(self, url):
         """
@@ -112,11 +113,17 @@ class plugin_impl(abstractlwc.awcbase):
         key = "%s://%s" % (url_scheme, url_host)
         if key in self.mappings:
             _, prefix_scheme, prefix_host = self.mappings.get(key)
-            return '{}://{}/{}{}'.format(prefix_scheme, prefix_host, url_parts.netloc, url_parts.path)
+            if prefix_scheme and prefix_host:
+                return '{}://{}/{}{}'.format(prefix_scheme, prefix_host, url_parts.netloc, url_parts.path)
+            else:
+                return url
         else:
             # wildcard
             if "*" in self.mappings:
                 _, prefix_scheme, prefix_host = self.mappings.get("*")
-                return '{}://{}/{}{}'.format(prefix_scheme, prefix_host, url_parts.netloc, url_parts.path)
-            else:
-                return url
+                if prefix_scheme and prefix_host:
+                    return '{}://{}/{}{}'.format(prefix_scheme, prefix_host, url_parts.netloc, url_parts.path)
+                else:
+                    return url
+
+        return url
