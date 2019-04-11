@@ -122,7 +122,7 @@ class plugin_impl(abstractlwc.awcbase):
             if "*" in self.mappings:
                 _, prefix_scheme, prefix_host = self.mappings.get("*")
                 if prefix_scheme and prefix_host:
-                    return '{}://{}/{}{}'.format(prefix_scheme, prefix_host, url_parts.path)
+                    return '{}://{}/{}'.format(prefix_scheme, prefix_host, url_parts.path)
                 else:
                     return url
 
